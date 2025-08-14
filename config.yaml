@@ -1,0 +1,15 @@
+server:
+  host: 0.0.0.0
+  port: 8080
+
+redis:
+  host: redis
+  port: 6379
+  password: ""
+  rate-limiter-db: 0
+
+
+rate-limiter:
+  fixed-window:
+    max-requests: 5
+    time-frame-ms: 60000
