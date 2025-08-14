@@ -1,8 +1,0 @@
-server:
-  host: localhost
-  port: 8080
-
-rate-limiter:
-  fixed-window:
-    max-requests: 5
-    time-frame-ms: 10000

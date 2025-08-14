@@ -3,7 +3,7 @@ server:
   port: 8080
 
 redis:
-  host: localhost
+  host: redis # Use redis as hostname if you use redis from docker
   port: 6379
   password: ""
   fixed-window-db: 0
