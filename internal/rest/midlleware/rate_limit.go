@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,7 +22,6 @@ func RateLimit(rateLimiter RateLimiter, keyFunc func(*gin.Context) string) gin.H
 
 		allowed, err := rateLimiter.Allow(c.Request.Context(), clientID)
 		if err != nil {
-			log.Println("%v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal rate limiter error"})
 			c.Abort()
 			return
