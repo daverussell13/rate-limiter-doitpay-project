@@ -2,7 +2,6 @@ package memory_test
 
 import (
 	"context"
-	"sync"
 	"testing"
 	"time"
 
@@ -95,34 +94,5 @@ func TestFixedWindowRepository_Save_ExistingClient(t *testing.T) {
 	}
 	if !got.EndTime.After(time.Now().Add(time.Minute)) {
 		t.Errorf("expected EndTime updated, got %v", got.EndTime)
-	}
-}
-
-func TestFixedWindowRepository_Concurrency(t *testing.T) {
-	ctx := context.Background()
-	clientID := "client4"
-	repo := memory.NewFixedWindowRepository()
-	window := ratelimit.Window{
-		Count:   1,
-		EndTime: time.Now().Add(time.Minute),
-	}
-
-	wg := sync.WaitGroup{}
-	for range make([]struct{}, 100) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			_ = repo.SaveWindow(ctx, clientID, window)
-			_, _ = repo.GetWindow(ctx, clientID)
-		}()
-	}
-	wg.Wait()
-
-	got, err := repo.GetWindow(ctx, clientID)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if got.Count != 1 {
-		t.Errorf("expected Count=1, got %d", got.Count)
 	}
 }

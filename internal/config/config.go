@@ -20,16 +20,23 @@ type Redis struct {
 	Host          string `mapstructure:"host"`
 	Port          int    `mapstructure:"port"`
 	Password      string `mapstructure:"password"`
-	RateLimiterDb int    `mapstructure:"rate-limiter-db"`
+	FixedWindowDb int    `mapstructure:"fixed-window-db"`
+	TokenBucketDb int    `mapstructure:"token-bucket-db"`
 }
 
 type RateLimiter struct {
 	FixedWindow FixedWindow `mapstructure:"fixed-window"`
+	TokenBucket TokenBucket `mapstructure:"token-bucket"`
 }
 
 type FixedWindow struct {
 	MaxRequests int `mapstructure:"max-requests"`
 	TimeFrameMs int `mapstructure:"time-frame-ms"`
+}
+
+type TokenBucket struct {
+	MaxTokens  float64 `mapstructure:"max-tokens"`
+	RefillRate float64 `mapstructure:"refill-rate"`
 }
 
 func Load() (*Config, error) {

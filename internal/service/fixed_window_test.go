@@ -14,7 +14,7 @@ type mockFixedWindowRepo struct {
 	storage map[string]ratelimit.Window
 }
 
-func newMockRepo() *mockFixedWindowRepo {
+func newFixedWindowMockRepo() *mockFixedWindowRepo {
 	return &mockFixedWindowRepo{
 		storage: make(map[string]ratelimit.Window),
 	}
@@ -34,7 +34,7 @@ func (m *mockFixedWindowRepo) SaveWindow(ctx context.Context, clientID string, w
 }
 
 func TestFixedWindowService_Allow(t *testing.T) {
-	repo := newMockRepo()
+	repo := newFixedWindowMockRepo()
 	cfg := config.FixedWindow{MaxRequests: 2, TimeFrameMs: 1000}
 	svc := service.NewFixedWindowService(repo, cfg)
 	clientID := "client1"
@@ -53,7 +53,7 @@ func TestFixedWindowService_Allow(t *testing.T) {
 }
 
 func TestFixedWindowService_Allow_HitMaxRequests(t *testing.T) {
-	repo := newMockRepo()
+	repo := newFixedWindowMockRepo()
 	cfg := config.FixedWindow{MaxRequests: 1, TimeFrameMs: 1000}
 	svc := service.NewFixedWindowService(repo, cfg)
 	clientID := "client2"
@@ -75,7 +75,7 @@ func TestFixedWindowService_Allow_HitMaxRequests(t *testing.T) {
 }
 
 func TestFixedWindowService_Allow_WindowExpired(t *testing.T) {
-	repo := newMockRepo()
+	repo := newFixedWindowMockRepo()
 	cfg := config.FixedWindow{MaxRequests: 1, TimeFrameMs: 1000}
 	svc := service.NewFixedWindowService(repo, cfg)
 	clientID := "client3"

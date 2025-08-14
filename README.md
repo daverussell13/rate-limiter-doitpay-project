@@ -1,40 +1,65 @@
 # 🚀 Project Rate Limiter
 **Author:** Dave Russell
 
+---
+
 ## 📦 How to Run
 
 ### 1️⃣ Using Docker (Recommended)
-Dengan Docker Compose, semua kebutuhan aplikasi (termasuk Redis) akan otomatis di-install, dibuild, dan dijalankan.
+With Docker Compose, all application dependencies (including Redis) will be installed, built, and started automatically.
 
-**Langkah:**
-1. Pastikan **Docker** & **Docker Compose** sudah ter-install.
-2. Di root directory project, jalankan:
+**Steps:**
+1. Ensure **Docker** & **Docker Compose** are installed.
+2. From the project root directory, run:
    ```bash
    docker-compose up --build
    ```
-3. Aplikasi dan Redis akan berjalan otomatis (Port yang digunakan 8080)
+3. The application and Redis will start automatically (Default port: **8080**).
 
 ---
 
 ### 2️⃣ Manual Setup (Without Docker)
-Kalau mau jalanin manual, pastikan:
-- **Go** versi `>= 1.24.1` sudah ter-install.
-- **Redis** versi terbaru sudah terpasang dan berjalan.
+If you prefer to run it manually, ensure:
+- **Go** version `>= 1.24.1` is installed.
+- **Redis** (latest version recommended) is installed and running.
 
-**Langkah:**
-1. Jalankan Redis di `localhost:6379`.
+**Steps:**
+1. Start Redis on `localhost:6379`.
 
-2. Install dependencies Go:
+2. Install Go dependencies:
    ```bash
    go mod tidy
    ```
 
-3. Jalankan aplikasi:
+3. Run the application:
    ```bash
    go run ./cmd/server
    ```
 
-4. Akses endpoint:
-   - `GET http://localhost:8080/ipaddress/ping` → endpoint rate limiter menggunakan ip address sebagai key
-   - `GET http://localhost:8080/apikey/ping` → endpoint rate limiter menggunakan api key sebagai key
+4. Available endpoints:
+   - `GET http://localhost:8080/ipaddress/ping` → rate limiter using **IP address** as the key.
+   - `GET http://localhost:8080/apikey/ping` → rate limiter using **API key** as the key.
+
+---
+
+## 🧪 Running Tests
+
+### Using Makefile
+A **Makefile** is provided for convenience:
+```bash
+make test      # Run all tests + generate coverage output
+make coverage  # Open the coverage results in HTML format
+make clean     # Remove generated coverage output files
+```
+
+### Manual Test Execution
+Run:
+```bash
+# Run tests with verbose output and create coverage.out
+go test -v -coverprofile="coverage.out" ./...
+
+# Open HTML coverage report
+go tool cover -html="coverage.out"
+```
+
 ---

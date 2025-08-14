@@ -20,10 +20,15 @@ func main() {
 	}
 
 	addr := fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port)
-	rateLimiterRdbClient := redis.NewClient(&redis.Options{
+	fixedWindowRdbClient := redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: cfg.Redis.Password,
-		DB:       cfg.Redis.RateLimiterDb,
+		DB:       cfg.Redis.FixedWindowDb,
+	})
+	tokenBucketRdbClient := redis.NewClient(&redis.Options{
+		Addr:     addr,
+		Password: cfg.Redis.Password,
+		DB:       cfg.Redis.TokenBucketDb,
 	})
 
 	// Uncomment this 2 line if you want to use in memory store
@@ -31,18 +36,38 @@ func main() {
 	// fixedWindowSvc := service.NewFixedWindowService(fixedWindowMemoryRepo, cfg.RateLimiter.FixedWindow)
 
 	// Uncomment this 2 line if you want to use redis store
-	fixedWindowRedisRepo := rdb.NewFixedWindowRepository(rateLimiterRdbClient)
+	fixedWindowRedisRepo := rdb.NewFixedWindowRepository(fixedWindowRdbClient)
 	fixedWindowSvc := service.NewFixedWindowService(fixedWindowRedisRepo, cfg.RateLimiter.FixedWindow)
+
+	// Uncomment this 2 line if you want to use in memory store
+	// tokenBucketMemoryRepo := memory.NewTokenBucketRepository()
+	// tokenBucketSvc := service.NewTokenBucketService(tokenBucketMemoryRepo, cfg.RateLimiter.TokenBucket)
+
+	// Uncomment this 2 line if you want to use redis store
+	tokenBucketRedisRepo := rdb.NewTokenBucketRepository(
+		tokenBucketRdbClient,
+		cfg.RateLimiter.TokenBucket.MaxTokens,
+		cfg.RateLimiter.TokenBucket.RefillRate,
+	)
+	tokenBucketSvc := service.NewTokenBucketService(tokenBucketRedisRepo, cfg.RateLimiter.TokenBucket)
 
 	pingHdl := rest.NewPingHandler()
 
 	r := gin.Default()
 
-	r.GET("/apikey/ping", middleware.RateLimit(fixedWindowSvc, func(c *gin.Context) string {
+	r.GET("/fw/apikey/ping", middleware.RateLimit(fixedWindowSvc, func(c *gin.Context) string {
 		return c.GetHeader("X-API-Key")
 	}), pingHdl.Ping)
 
-	r.GET("/ipaddress/ping", middleware.RateLimit(fixedWindowSvc, func(c *gin.Context) string {
+	r.GET("/fw/ipaddress/ping", middleware.RateLimit(fixedWindowSvc, func(c *gin.Context) string {
+		return c.ClientIP()
+	}), pingHdl.Ping)
+
+	r.GET("/tb/apikey/ping", middleware.RateLimit(tokenBucketSvc, func(c *gin.Context) string {
+		return c.GetHeader("X-API-Key")
+	}), pingHdl.Ping)
+
+	r.GET("/tb/ipaddress/ping", middleware.RateLimit(tokenBucketSvc, func(c *gin.Context) string {
 		return c.ClientIP()
 	}), pingHdl.Ping)
 

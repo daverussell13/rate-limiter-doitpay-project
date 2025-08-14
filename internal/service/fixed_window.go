@@ -6,6 +6,7 @@ import (
 
 	"github.com/daverussell13/rate-limiter-doitpay-project/internal/config"
 	"github.com/daverussell13/rate-limiter-doitpay-project/internal/domain/ratelimit"
+	"github.com/daverussell13/rate-limiter-doitpay-project/internal/util"
 )
 
 type FixedWindowRepository interface {
@@ -14,18 +15,23 @@ type FixedWindowRepository interface {
 }
 
 type FixedWindowService struct {
-	repo FixedWindowRepository
-	cfg  config.FixedWindow
+	repo  FixedWindowRepository
+	cfg   config.FixedWindow
+	locks *util.StripedMutex
 }
 
 func NewFixedWindowService(repo FixedWindowRepository, cfg config.FixedWindow) *FixedWindowService {
 	return &FixedWindowService{
-		repo: repo,
-		cfg:  cfg,
+		repo:  repo,
+		cfg:   cfg,
+		locks: util.NewStripedMutex(256),
 	}
 }
 
 func (s *FixedWindowService) Allow(ctx context.Context, clientID string) (bool, error) {
+	unlock := s.locks.Lock(clientID)
+	defer unlock()
+
 	window, err := s.repo.GetWindow(ctx, clientID)
 	if err != nil {
 		return false, err
